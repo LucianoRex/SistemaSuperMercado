@@ -14,6 +14,15 @@ package classes;
 public class Valores {
     String descricao;
 
+    public int getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
+    int codigo;
+
     public String getDescricao() {
         return descricao;
     }

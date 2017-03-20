@@ -10,8 +10,13 @@ import classes.GetId;
 import classes.Search;
 import classes.Valores;
 import elementos.Menu1;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +29,10 @@ import javax.swing.table.DefaultTableModel;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JTable;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import modelo.ConexaoFireBird;
 import modelo.ConexaoMySQL;
 import net.proteanit.sql.DbUtils;
@@ -43,7 +51,21 @@ public class CadastroProduto extends javax.swing.JFrame {
     }
     DefaultTableModel model;
     ArrayList<String> lista = new ArrayList();
-    Valores valores = new Valores();
+    String ImgPath = null;
+   // Valores valores = new Valores();
+
+    int codigo;
+    int grupo;
+    int subGrupo;
+    int mSegment;
+    int marca;
+    int unidade;
+
+    String descricao;
+    String referencia;
+    String codBarras;
+    String caminho;
+    double valorUnidade;
 
     boolean add = false;
     boolean edit = false;
@@ -53,7 +75,7 @@ public class CadastroProduto extends javax.swing.JFrame {
     String id = "";
 
     public void confereBtn() {
-        if (jTBGrupo.getRowCount() > 0) {
+        if (jTBProduto.getRowCount() > 0) {
             //botoes
             btnEdit.setEnabled(true);
             btnDelete.setEnabled(true);
@@ -70,13 +92,14 @@ public class CadastroProduto extends javax.swing.JFrame {
             btnDelete.setEnabled(false);
             btnEdit.setEnabled(false);
             btnAdd.setEnabled(false);
-            //Botoes secundarios
 
+            //Botoes secundarios
             btnGrupo.setEnabled(true);
             btnMSegment.setEnabled(true);
             btnMarca.setEnabled(true);
             btnSubGrupo.setEnabled(true);
             btnUnidade.setEnabled(true);
+            btnAddImage.setEnabled(true);
 
             //campos
             jTDescricao.setEnabled(true);
@@ -95,6 +118,7 @@ public class CadastroProduto extends javax.swing.JFrame {
             btnMarca.setEnabled(false);
             btnSubGrupo.setEnabled(false);
             btnUnidade.setEnabled(false);
+            btnAddImage.setEnabled(false);
             //campos
             jTDescricao.setEnabled(false);
             jTCodBarras.setEnabled(false);
@@ -135,18 +159,18 @@ public class CadastroProduto extends javax.swing.JFrame {
 
     public void atualizaTabela(int linhaSelecionada, ArrayList lista) {
         for (int i = 0; i < lista.size(); i++) {
-            jTBGrupo.setValueAt(lista.get(i), linhaSelecionada, i);
+            jTBProduto.setValueAt(lista.get(i), linhaSelecionada, i);
         }
     }
 
     public void montaTabela(String id) {
-        jTBGrupo.setVisible(true);
+        jTBProduto.setVisible(true);
         Connection con = ConexaoMySQL.getConnection();
         String sql = "SELECT * FROM UNIDADE WHERE UNIDADE.CUNIDADE IN (" + id + ")";
         try {
             PreparedStatement ps = con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-            jTBGrupo.setModel(DbUtils.resultSetToTableModel(rs));
+            jTBProduto.setModel(DbUtils.resultSetToTableModel(rs));
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage());
         }
@@ -201,13 +225,12 @@ public class CadastroProduto extends javax.swing.JFrame {
         jTMsegment = new javax.swing.JTextField();
         btnMSegment = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
-        jButton6 = new javax.swing.JButton();
-        jTextField2 = new javax.swing.JTextField();
+        btnAddImage = new javax.swing.JButton();
         jLabel11 = new javax.swing.JLabel();
         jTValorUnidade = new javax.swing.JTextField();
         btnMarca = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTBGrupo = new javax.swing.JTable();
+        jTBProduto = new javax.swing.JTable();
         jPanel6 = new javax.swing.JPanel();
         btnAdd = new javax.swing.JButton();
         btnOk = new javax.swing.JButton();
@@ -215,6 +238,8 @@ public class CadastroProduto extends javax.swing.JFrame {
         btnEdit = new javax.swing.JToggleButton();
         btnSearch = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        jLImagem = new javax.swing.JLabel();
 
         jMenu1.setText("jMenu1");
 
@@ -270,7 +295,7 @@ public class CadastroProduto extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(22, 22, 22)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 776, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 1118, Short.MAX_VALUE)
                 .addComponent(btnClose)
                 .addContainerGap())
         );
@@ -286,6 +311,8 @@ public class CadastroProduto extends javax.swing.JFrame {
         jPanel2.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 51, 102), 2, true));
         jPanel2.setLayout(null);
 
+        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
         jLabel18.setText("Código");
 
         jTCodigo.setEditable(false);
@@ -298,8 +325,6 @@ public class CadastroProduto extends javax.swing.JFrame {
 
         jLabel4.setText("Unidade");
 
-        jTUnidade.setEditable(false);
-
         btnUnidade.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Search-15.png"))); // NOI18N
         btnUnidade.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -309,11 +334,13 @@ public class CadastroProduto extends javax.swing.JFrame {
 
         jLabel6.setText("Grupo");
 
-        jTGrupo.setEditable(false);
+        jTGrupo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTGrupoActionPerformed(evt);
+            }
+        });
 
         jLabel7.setText("SubGrupo");
-
-        jTSubGrupo.setEditable(false);
 
         btnGrupo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Search-15.png"))); // NOI18N
         btnGrupo.addActionListener(new java.awt.event.ActionListener() {
@@ -323,24 +350,40 @@ public class CadastroProduto extends javax.swing.JFrame {
         });
 
         btnSubGrupo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Search-15.png"))); // NOI18N
+        btnSubGrupo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSubGrupoActionPerformed(evt);
+            }
+        });
 
         jLabel8.setText("Marca");
 
-        jTMarca.setEditable(false);
-
         jLabel9.setText("M. Segment");
 
-        jTMsegment.setEditable(false);
-
         btnMSegment.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Search-15.png"))); // NOI18N
+        btnMSegment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMSegmentActionPerformed(evt);
+            }
+        });
 
         jLabel10.setText("Imagem");
 
-        jButton6.setText("...");
+        btnAddImage.setText("...");
+        btnAddImage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddImageActionPerformed(evt);
+            }
+        });
 
         jLabel11.setText("Valor Unidade");
 
         btnMarca.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Search-15.png"))); // NOI18N
+        btnMarca.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMarcaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -366,52 +409,48 @@ public class CadastroProduto extends javax.swing.JFrame {
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
                             .addComponent(jLabel7))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGap(75, 75, 75)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jTCodBarras)
                             .addComponent(jTSubGrupo, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(btnSubGrupo)
+                                .addGap(27, 27, 27)
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTMarca, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnMarca)
+                                .addGap(28, 28, 28)
+                                .addComponent(jLabel9)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jTMsegment, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnMSegment)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel10)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jTUnidade, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(btnUnidade)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel11)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jTValorUnidade, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jTGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnGrupo))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel11)
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addComponent(btnSubGrupo)
-                                        .addGap(27, 27, 27)
-                                        .addComponent(jLabel8)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jTValorUnidade, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addComponent(jTMarca, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnMarca)
-                                        .addGap(28, 28, 28)
-                                        .addComponent(jLabel9)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(jTMsegment, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(btnMSegment))))))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel10)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(92, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnGrupo)))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnAddImage)
+                .addGap(40, 40, 40))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -442,36 +481,35 @@ public class CadastroProduto extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel6)
-                            .addComponent(jTGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jTGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jTValorUnidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel11))
                         .addGap(3, 3, 3)))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel7)
-                        .addComponent(jTSubGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(btnSubGrupo)
-                    .addComponent(btnMSegment)
-                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(btnMarca)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel8)
-                            .addComponent(jTMarca, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel9)
-                            .addComponent(jTMsegment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10)
-                    .addComponent(jButton6)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel11)
-                    .addComponent(jTValorUnidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                            .addComponent(jLabel7)
+                            .addComponent(jTSubGrupo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnSubGrupo)
+                        .addComponent(btnMSegment)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnMarca)
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel8)
+                                .addComponent(jTMarca, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel9)
+                                .addComponent(jTMsegment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnAddImage)
+                        .addComponent(jLabel10)))
+                .addContainerGap(86, Short.MAX_VALUE))
         );
 
         jPanel2.add(jPanel3);
-        jPanel3.setBounds(10, 50, 930, 170);
+        jPanel3.setBounds(10, 50, 1050, 210);
 
-        jTBGrupo.setModel(new javax.swing.table.DefaultTableModel(
+        jTBProduto.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -479,15 +517,15 @@ public class CadastroProduto extends javax.swing.JFrame {
 
             }
         ));
-        jTBGrupo.addMouseListener(new java.awt.event.MouseAdapter() {
+        jTBProduto.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTBGrupoMouseClicked(evt);
+                jTBProdutoMouseClicked(evt);
             }
         });
-        jScrollPane2.setViewportView(jTBGrupo);
+        jScrollPane2.setViewportView(jTBProduto);
 
         jPanel2.add(jScrollPane2);
-        jScrollPane2.setBounds(20, 240, 760, 210);
+        jScrollPane2.setBounds(10, 280, 1260, 210);
 
         btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Plus-20.png"))); // NOI18N
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
@@ -566,6 +604,22 @@ public class CadastroProduto extends javax.swing.JFrame {
         jPanel2.add(jPanel6);
         jPanel6.setBounds(10, 10, 362, 31);
 
+        jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLImagem, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLImagem, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+        );
+
+        jPanel2.add(jPanel4);
+        jPanel4.setBounds(1080, 50, 190, 210);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -581,7 +635,7 @@ public class CadastroProduto extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -591,7 +645,7 @@ public class CadastroProduto extends javax.swing.JFrame {
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
 
-        model = (DefaultTableModel) jTBGrupo.getModel();
+        model = (DefaultTableModel) jTBProduto.getModel();
         model.setNumRows(0);
         confereBtn();
 
@@ -610,13 +664,14 @@ public class CadastroProduto extends javax.swing.JFrame {
         btnClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Close Window-30.png")));
     }//GEN-LAST:event_btnCloseMouseExited
 
-    private void jTBGrupoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTBGrupoMouseClicked
+    private void jTBProdutoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTBProdutoMouseClicked
         //retornar o valor aos campos
 
-        int linha = jTBGrupo.getSelectedRow();
-        jTCodigo.setText(jTBGrupo.getValueAt(linha, 0).toString());
-        jTDescricao.setText((String) jTBGrupo.getValueAt(linha, 1));
-    }//GEN-LAST:event_jTBGrupoMouseClicked
+        int linha = jTBProduto.getSelectedRow();
+        jTCodigo.setText(jTBProduto.getValueAt(linha, 0).toString());
+        jTDescricao.setText((String) jTBProduto.getValueAt(linha, 1));
+        jTReferencia.setText((String) jTBProduto.getValueAt(linha,2));
+    }//GEN-LAST:event_jTBProdutoMouseClicked
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         add = true;
@@ -632,51 +687,86 @@ public class CadastroProduto extends javax.swing.JFrame {
         String descricao = jTDescricao.getText();
         String referencia = jTReferencia.getText();
         String codBarra = jTCodBarras.getText();
+        valorUnidade = Double.parseDouble(jTValorUnidade.getText());
 //        int unidade= Integer.parseInt(jTUnidade.getText());
 //        int grupo = Integer.parseInt(jTGrupo.getText());
 //        int subGrupo = Integer.parseInt(jTSubGrupo.getText());
 //        int mSegment = Integer.parseInt(jTMsegment.getText());
 //        int marca = Integer.parseInt(jTMarca.get)
-        String msegment = jTDescricao.getText();
-        String sql = "INSERT INTO PRODUTO(DESCRICAO,REFERENCIA,CODBARRAS)"
-                + " VALUES(?)";
+        InputStream img = null;
+        try {
+            img = new FileInputStream(new File(ImgPath));
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CadastroProduto.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+      //  String msegment = jTDescricao.getText();
+        String sql = "INSERT INTO PRODUTO(DESCRICAO,REFERENCIA,CODBARRAS,CGRUPO,CSUBGRUPO,CMARCA,CMSEGMENT,CUNIDADE,VALORUNIDADE,IMAGEM)"
+                + " VALUES(?,?,?,?,?,?,?,?,?,?)";
         try {
             PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, msegment);
+            ps.setString(1, descricao);
+            ps.setString(2, referencia);
+            ps.setString(3, codBarra);
+            ps.setInt(4, grupo);
+            ps.setInt(5, subGrupo);
+            ps.setInt(6, marca);
+            ps.setInt(7, mSegment);
+            ps.setInt(8, unidade);
+            ps.setDouble(9, valorUnidade);
+            ps.setBlob(10, img);          
             ps.execute();
             ps.close();
+           
+            
 
             JOptionPane.showMessageDialog(this, "Registros inseridos");
 
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage());
         }
+         System.out.println(grupo);
+            System.out.println(subGrupo);
+            System.out.println(marca);
+            System.out.println(mSegment);
+            System.out.println(unidade);
         //id += getId.getId("UNIDADE", "CUNIDADE") + ",";
-        String linha[] = {getId.getId("MSEGMENT", "CMSEGMENT"), msegment};//RETORNA O ID
-        jTCodigo.setText(getId.getId("MSEGMENT", "CMSEGMENT"));
+       // String linha[] = {getId.getId("MSEGMENT", "CMSEGMENT"), msegment};//RETORNA O ID
+        //jTCodigo.setText(getId.getId("MSEGMENT", "CMSEGMENT"));
 
-        model.addRow(linha);
+       // model.addRow(linha);
         add = false;
         cancel = false;
         ok = true;
         confereBtn();
+        String consulta="SELECT * FROM PRODUTO";
+        
+         try {
+            PreparedStatement ps = con.prepareStatement(consulta);
+            ResultSet rs = ps.executeQuery();
+            jTBProduto.setModel(DbUtils.resultSetToTableModel(rs));
+
+            // retornaDescricao(rs.getString(1));
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "" + ex.getMessage());
+        }
     }//GEN-LAST:event_btnOkActionPerformed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         //        model.removeRow(tabela.getSelectedRow());
         int option = JOptionPane.showConfirmDialog(this, "Excluir?");
         if (option == JOptionPane.YES_OPTION) {
-            int linhaSelecionada = jTBGrupo.getSelectedRow();
+            int linhaSelecionada = jTBProduto.getSelectedRow();
             System.out.println(linhaSelecionada);
             if (linhaSelecionada >= 0) {
                 Connection con = ConexaoMySQL.getConnection();
                 String sql = "DELETE FROM MSEGMENT"
-                        + " WHERE MSEGMENT.CMSEGMENT = " + jTBGrupo.getValueAt(linhaSelecionada, 0);
+                        + " WHERE MSEGMENT.CMSEGMENT = " + jTBProduto.getValueAt(linhaSelecionada, 0);
                 try {
                     PreparedStatement st = con.prepareStatement(sql);
                     st.execute();
                     st.close();
-                    model.removeRow(jTBGrupo.getSelectedRow());
+                    model.removeRow(jTBProduto.getSelectedRow());
                     JOptionPane.showMessageDialog(this, "Cadastro removido");
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(this, ex.getMessage());
@@ -707,18 +797,18 @@ public class CadastroProduto extends javax.swing.JFrame {
 
             confereBtn();
             if (!editCancel) {
-                int linhaSelecionada = jTBGrupo.getSelectedRow();
+                int linhaSelecionada = jTBProduto.getSelectedRow();
                 try {
                     PreparedStatement ps = con.prepareStatement(sql);
                     ps.setString(1, marca);
-                    System.out.println(jTBGrupo.getValueAt(linhaSelecionada, 0));
-                    ps.setInt(2, Integer.parseInt((String) jTBGrupo.getValueAt(linhaSelecionada, 0)));
+                    System.out.println(jTBProduto.getValueAt(linhaSelecionada, 0));
+                    ps.setInt(2, Integer.parseInt((String) jTBProduto.getValueAt(linhaSelecionada, 0)));
                     ps.execute();
                     ps.close();
                     JOptionPane.showMessageDialog(this, "Registro alterado");
                     confereBtn();
                     lista.clear();
-                    lista.add(((String) jTBGrupo.getValueAt(linhaSelecionada, 0)));
+                    lista.add(((String) jTBProduto.getValueAt(linhaSelecionada, 0)));
                     lista.add(marca);
                     edit = false;
                     atualizaTabela(linhaSelecionada, lista);
@@ -750,33 +840,100 @@ public class CadastroProduto extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnUnidadeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUnidadeActionPerformed
-      Consulta consulta = new Consulta(this, true);
-        consulta.jCTipo.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Código", "descricao"}));
+        Consulta consulta = new Consulta(this, true);
+        consulta.jCTipo.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Código", "Descricao"}));
         consulta.sql = "SELECT UNIDADE.CUNIDADE AS CODIGO, UNIDADE.UNIDADE AS DESCRICAO FROM UNIDADE";
         consulta.campo.add("UNIDADE.CUNIDADE");
         consulta.campo.add("UNIDADE.UNIDADE");
         consulta.setVisible(true);
+        jTUnidade.setText(consulta.valores.getDescricao());
+        unidade = consulta.valores.getCodigo();
+        System.out.println(unidade);
 
-       // atulaizaCampos(valores.getDescricao());
-        jTUnidade.setText(consulta.descricao1);
-        System.out.println(consulta.descricao1);
     }//GEN-LAST:event_btnUnidadeActionPerformed
 
     private void btnGrupoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrupoActionPerformed
         Consulta consulta = new Consulta(this, true);
-        consulta.jCTipo.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Código", "descricao"}));
-        consulta.sql = "SELECT * FROM GRUPO";
+        consulta.jCTipo.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Código", "Descricao"}));
+        consulta.sql = "SELECT GRUPO.CGRUPO AS CODIGO,GRUPO.GRUPO AS DESCRICAO FROM GRUPO";
         consulta.campo.add("GRUPO.CGRUPO");
         consulta.campo.add("GRUPO.GRUPO");
         consulta.setVisible(true);
-
-       // atulaizaCampos(valores.getDescricao());
-        jTGrupo.setText(consulta.descricao1);
-        System.out.println(consulta.descricao1);
-
-        //jTGrupo.setText(teste.getDescricao() );
+        jTGrupo.setText(consulta.valores.getDescricao());
+        grupo = consulta.valores.getCodigo();
+        System.out.println(grupo);
 
     }//GEN-LAST:event_btnGrupoActionPerformed
+
+    private void btnSubGrupoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubGrupoActionPerformed
+        Consulta consulta = new Consulta(this, true);
+        consulta.jCTipo.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Código", "Descricao"}));
+        consulta.sql = "SELECT SUBGRUPO.CSUBGRUPO AS CODIGO,SUBGRUPO.SUBGRUPO AS DESCRICAO FROM SUBGRUPO";
+        consulta.campo.add("SUBGRUPO.CSUBGRUPO");
+        consulta.campo.add("SUBGRUPO.SUBGRUPO");
+        consulta.setVisible(true);
+        jTSubGrupo.setText(consulta.valores.getDescricao());
+        subGrupo = consulta.valores.getCodigo();
+        System.out.println(subGrupo);
+    }//GEN-LAST:event_btnSubGrupoActionPerformed
+
+    private void btnMarcaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMarcaActionPerformed
+        Consulta consulta = new Consulta(this, true);
+        consulta.jCTipo.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Código", "Descricao"}));
+        consulta.sql = "SELECT MARCA.CMARCA AS CODIGO,MARCA.MARCA AS NOME FROM MARCA";
+        consulta.campo.add("MARCA.CMARCA");
+        consulta.campo.add("MARCA.MARCA");
+        consulta.setVisible(true);
+        jTMarca.setText(consulta.valores.getDescricao());
+        marca = consulta.valores.getCodigo();
+        System.out.println(marca);
+    }//GEN-LAST:event_btnMarcaActionPerformed
+
+    private void btnMSegmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMSegmentActionPerformed
+        Consulta consulta = new Consulta(this, true);
+        consulta.jCTipo.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Código", "Descricao"}));
+        consulta.sql = "SELECT MSEGMENT.CMSEGMENT AS CODIGO,MSEGMENT.MSEGMENT AS NOME FROM MSEGMENT";
+        consulta.campo.add("MSEGMENT.CMSEGMENT");
+        consulta.campo.add("MSEGMENT.MSEGMENT");
+        consulta.setVisible(true);
+        jTMsegment.setText(consulta.valores.getDescricao());
+        mSegment = consulta.valores.getCodigo();
+        System.out.println(mSegment);
+    }//GEN-LAST:event_btnMSegmentActionPerformed
+
+    private void btnAddImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddImageActionPerformed
+        JFileChooser file = new JFileChooser();
+        file.setCurrentDirectory(new File(System.getProperty("user.home")));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("*image", "jpg", "png");
+        file.addChoosableFileFilter(filter);
+        int result = file.showSaveDialog(null);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = file.getSelectedFile();
+            String path = selectedFile.getAbsolutePath();
+            jLImagem.setIcon(ResizeImage(path, null));
+            ImgPath = path;
+        } else {
+            System.out.println("Nenhum arquivo selecionado");
+        }
+    }//GEN-LAST:event_btnAddImageActionPerformed
+
+    private void jTGrupoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTGrupoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTGrupoActionPerformed
+    public ImageIcon ResizeImage(String imagePath, byte[] pic) {
+        ImageIcon myImage = null;
+
+        if (imagePath != null) {
+            myImage = new ImageIcon(imagePath);
+        } else {
+            myImage = new ImageIcon(pic);
+        }
+
+        Image img = myImage.getImage();
+        Image img2 = img.getScaledInstance(jLImagem.getWidth(), jLImagem.getHeight(), Image.SCALE_SMOOTH);
+        ImageIcon image = new ImageIcon(img2);
+        return image;
+    }
 
     /**
      * @param args the command line arguments
@@ -804,133 +961,6 @@ public class CadastroProduto extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(CadastroProduto.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
-        //</editor-fold>
 
 
         /* Create and display the form */
@@ -943,6 +973,7 @@ public class CadastroProduto extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnAddImage;
     private javax.swing.JButton btnCancel;
     private javax.swing.JLabel btnClose;
     private javax.swing.JButton btnDelete;
@@ -955,7 +986,7 @@ public class CadastroProduto extends javax.swing.JFrame {
     private javax.swing.JButton btnSubGrupo;
     private javax.swing.JButton btnUnidade;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton6;
+    private javax.swing.JLabel jLImagem;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -973,10 +1004,11 @@ public class CadastroProduto extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTBGrupo;
+    private javax.swing.JTable jTBProduto;
     private javax.swing.JTextField jTCodBarras;
     private javax.swing.JTextField jTCodigo;
     public javax.swing.JTextField jTDescricao;
@@ -988,7 +1020,6 @@ public class CadastroProduto extends javax.swing.JFrame {
     private javax.swing.JTextField jTUnidade;
     private javax.swing.JTextField jTValorUnidade;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
 
 }
