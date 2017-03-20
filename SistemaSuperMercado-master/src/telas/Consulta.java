@@ -29,7 +29,6 @@ public class Consulta extends javax.swing.JDialog {
     String sql;
     public static ArrayList<String> campo = new ArrayList();
     Valores valores = new Valores();
-    public String descricao1;
 
     /**
      * Creates new form Teste
@@ -57,10 +56,11 @@ public class Consulta extends javax.swing.JDialog {
         jTSearch = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tabela = new javax.swing.JTable();
+        jTBResult = new javax.swing.JTable();
         btnEnviar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setUndecorated(true);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowOpened(java.awt.event.WindowEvent evt) {
                 formWindowOpened(evt);
@@ -77,32 +77,32 @@ public class Consulta extends javax.swing.JDialog {
             }
         });
 
-        btnSearch.setText("jButton1");
+        btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Search-20.png"))); // NOI18N
         btnSearch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSearchActionPerformed(evt);
             }
         });
 
-        tabela.setModel(new javax.swing.table.DefaultTableModel(
+        jTBResult.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {},
+                {},
+                {},
+                {}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        tabela.addMouseListener(new java.awt.event.MouseAdapter() {
+        jTBResult.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tabelaMouseClicked(evt);
+                jTBResultMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(tabela);
+        jScrollPane1.setViewportView(jTBResult);
 
-        btnEnviar.setText("jButton1");
+        btnEnviar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagens/Ok-20.png"))); // NOI18N
         btnEnviar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnEnviarActionPerformed(evt);
@@ -116,9 +116,6 @@ public class Consulta extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(30, 30, 30)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jCTipo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -128,25 +125,34 @@ public class Consulta extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnSearch)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnEnviar)))
-                .addContainerGap(43, Short.MAX_VALUE))
+                        .addComponent(btnEnviar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 388, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jCTipo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jCParametro, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSearch)
-                    .addComponent(btnEnviar))
-                .addGap(32, 32, 32)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jCTipo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jCParametro, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jTSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnEnviar)
+                            .addComponent(btnSearch))))
+                .addGap(41, 41, 41)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addContainerGap(34, Short.MAX_VALUE))
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
@@ -161,7 +167,7 @@ public class Consulta extends javax.swing.JDialog {
         for (int i = 0; i < campo.size(); i++) {
             cTipo[i] = campo.get(i);
         }
-        campo.clear();
+       // campo.clear();
         String[] cParametro = new String[4];
         cParametro[0] = "=";
         cParametro[1] = "<>";
@@ -170,15 +176,15 @@ public class Consulta extends javax.swing.JDialog {
         int tipo = jCTipo.getSelectedIndex();
         int parametro = jCParametro.getSelectedIndex();
 
-        consulta = sql + " where " + cTipo[tipo] + " " + cParametro[parametro] + " " + jTSearch.getText();
+        consulta = sql + " WHERE " + cTipo[tipo] + " " + cParametro[parametro] + " " + jTSearch.getText();
         System.out.println(consulta);
-     
+
         String[] linha = new String[campo.size()];
 
         try {
             PreparedStatement ps = con.prepareStatement(consulta);
             ResultSet rs = ps.executeQuery();
-            tabela.setModel(DbUtils.resultSetToTableModel(rs));
+            jTBResult.setModel(DbUtils.resultSetToTableModel(rs));
 
             // retornaDescricao(rs.getString(1));
         } catch (SQLException ex) {
@@ -187,30 +193,37 @@ public class Consulta extends javax.swing.JDialog {
     }//GEN-LAST:event_btnSearchActionPerformed
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        model = (DefaultTableModel) tabela.getModel();
+        model = (DefaultTableModel) jTBResult.getModel();
         model.setNumRows(0);
     }//GEN-LAST:event_formWindowOpened
 
     private void jTSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTSearchActionPerformed
-        // TODO add your handling code here:
+
     }//GEN-LAST:event_jTSearchActionPerformed
 
-    private void tabelaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelaMouseClicked
-        int linha = tabela.getSelectedRow();
-        valores.setDescricao((String) tabela.getValueAt(linha, 1));
+    private void jTBResultMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTBResultMouseClicked
+        int linha = jTBResult.getSelectedRow();
+        valores.setCodigo((int) jTBResult.getValueAt(linha, 0));
+        valores.setDescricao((String) jTBResult.getValueAt(linha, 1));
         System.out.println("");
-//        uf = (String) jTBUf.getValueAt(linha, 1);       
-    }//GEN-LAST:event_tabelaMouseClicked
+    }//GEN-LAST:event_jTBResultMouseClicked
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
 
-        //this.setVisible(false);
-        this.dispose();
-        descricao1 = valores.getDescricao();
+        
+//        codigo = valores.getCodigo();
+//        descricao = valores.getDescricao();
+        int linha = jTBResult.getSelectedRow();
+        if (linha >=0) {   
+              valores.setCodigo((int) jTBResult.getValueAt(linha, 0));
+            valores.setDescricao((String) jTBResult.getValueAt(linha, 1));            
+             this.dispose();
+             campo.clear();
+        }else{
+            JOptionPane.showMessageDialog(this,"Nenhum resultado");
+        }
 
-        int linha = tabela.getSelectedRow();
-        valores.setDescricao((String) tabela.getValueAt(linha, 1));
-
+        String saida = valores.getDescricao();
     }//GEN-LAST:event_btnEnviarActionPerformed
 
     /**
@@ -261,7 +274,7 @@ public class Consulta extends javax.swing.JDialog {
     public javax.swing.JComboBox jCParametro;
     public javax.swing.JComboBox jCTipo;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTBResult;
     private javax.swing.JTextField jTSearch;
-    private javax.swing.JTable tabela;
     // End of variables declaration//GEN-END:variables
 }
